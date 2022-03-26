@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -20,5 +21,25 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), "Validation Failed",
                 ex.getBindingResult().toString());
         return new ResponseEntity(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {TokenNotFoundException.class})
+    public ResponseEntity<Object> handleTokenNotFoundException(TokenNotFoundException e) {
+        return new ResponseEntity<>(e, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = {EmailAlreadyConfirmedException.class})
+    public ResponseEntity<Object> handleEmailAlreadyConfirmedException(EmailAlreadyConfirmedException e) {
+        return new ResponseEntity<>(e, HttpStatus.ALREADY_REPORTED);
+    }
+
+    @ExceptionHandler(value = {TokenExpiredException.class})
+    public ResponseEntity<Object> handleTokenExpiredException(TokenExpiredException e) {
+        return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {InvalidEmailException.class})
+    public ResponseEntity<Object> handleInvalidEmailException(InvalidEmailException e) {
+        return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
     }
 }

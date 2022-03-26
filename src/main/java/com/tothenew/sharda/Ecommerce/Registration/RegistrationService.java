@@ -1,15 +1,23 @@
 package com.tothenew.sharda.Ecommerce.Registration;
 
 import com.tothenew.sharda.Ecommerce.Email.EmailSender;
+import com.tothenew.sharda.Ecommerce.Exception.EmailAlreadyConfirmedException;
+import com.tothenew.sharda.Ecommerce.Exception.InvalidEmailException;
+import com.tothenew.sharda.Ecommerce.Exception.TokenExpiredException;
+import com.tothenew.sharda.Ecommerce.Exception.TokenNotFoundException;
 import com.tothenew.sharda.Ecommerce.Registration.Token.ConfirmationToken;
+import com.tothenew.sharda.Ecommerce.Registration.Token.ConfirmationTokenRepository;
 import com.tothenew.sharda.Ecommerce.Registration.Token.ConfirmationTokenService;
 import com.tothenew.sharda.Ecommerce.User.User;
+import com.tothenew.sharda.Ecommerce.User.UserRepository;
 import com.tothenew.sharda.Ecommerce.User.UserRole;
 import com.tothenew.sharda.Ecommerce.User.UserService;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -18,12 +26,14 @@ public class RegistrationService {
     private final EmailValidator emailValidator;
     private final UserService userService;
     private final ConfirmationTokenService confirmationTokenService;
+    private final ConfirmationTokenRepository confirmationTokenRepository;
     private final EmailSender emailSender;
+    private final UserRepository userRepository;
 
     public String register(RegistrationRequest request) {
         boolean isValidEmail = emailValidator.test(request.getEmail());
         if (!isValidEmail) {
-            throw new IllegalStateException("Email is not Valid!");
+            throw new InvalidEmailException("Email is not Valid!");
         }
         String token = userService.signUpUser(
                 new User(
@@ -31,7 +41,7 @@ public class RegistrationService {
                         request.getLastName(),
                         request.getEmail(),
                         request.getPassword(),
-                        UserRole.USER,
+                        UserRole.CUSTOMER,
                         request.getContact(),
                         request.getConfirmPassword()
                 )
@@ -43,17 +53,36 @@ public class RegistrationService {
 
     public String confirmToken(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService.getToken(token)
-                .orElseThrow(() -> new IllegalStateException("Token not found!"));
+                .orElseThrow(() -> new TokenNotFoundException("Token not found!"));
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new IllegalStateException("Email already confirmed.");
+            throw new EmailAlreadyConfirmedException("Email already confirmed.");
         }
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("Token expired!!");
+            throw new TokenExpiredException("Token expired!!");
         }
         confirmationTokenService.setConfirmedAt(token);
         userService.enableUser(confirmationToken.getUser().getEmail());
         return "confirmed";
+    }
+
+    public String confirmByEmail(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        boolean userExists = userRepository.findByEmail(user.get().getEmail()).isPresent();
+        if (userExists) {
+            ConfirmationToken confirmationToken = confirmationTokenRepository.getById(user.get().getId());
+            if (confirmationToken.getConfirmedAt() != null) {
+                throw new EmailAlreadyConfirmedException("Email already confirmed.");
+            }
+            LocalDateTime expiredAt = confirmationToken.getExpiresAt();
+            if (expiredAt.isBefore(LocalDateTime.now())) {
+                throw new TokenExpiredException("Token expired!!");
+            }
+            confirmationTokenService.setConfirmedAt(confirmationToken.getToken());
+            userService.enableUser(confirmationToken.getUser().getEmail());
+            return "Confirmed";
+        }
+        return "Not Confirmed";
     }
 
     private String buildEmail(String name, String link) {

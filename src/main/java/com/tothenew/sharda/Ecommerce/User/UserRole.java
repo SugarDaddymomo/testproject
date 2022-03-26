@@ -1,7 +1,7 @@
 package com.tothenew.sharda.Ecommerce.User;
 
 public enum UserRole {
-	USER,
+	CUSTOMER,
 	ADMIN,
 	SELLER
 }
