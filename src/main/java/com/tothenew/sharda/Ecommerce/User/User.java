@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import javax.persistence.*;
-import javax.validation.constraints.*;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,12 +29,7 @@ public class User implements UserDetails {
 	private String firstName;
 	private String middleName;
 	private String lastName;
-
-	@Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\\\.[a-z]{2,3}", flags = Pattern.Flag.CASE_INSENSITIVE, message = "Email should be unique and valid")
-	@NotEmpty(message = "Email cannot be empty")
 	private String email;
-	@NotEmpty
-	@Size(min = 8, max = 16, message = "Password must be equal or greater than 8 characters but less than 16 characters")
 	private String password;
 	@Enumerated(EnumType.STRING)
 	private UserRole userRole;
@@ -45,14 +38,10 @@ public class User implements UserDetails {
 	private Boolean enabled = false;
 	private Integer invalidAttemptCount;
 	private LocalDateTime passwordUpdateDate;
-
-	@NotEmpty
-	@Size(min = 8, max = 16, message = "Password must be equal or greater than 8 characters but less than 16 characters")
 	private String confirmPassword;
-
-	@NotEmpty
-	@Size(min = 10, max = 10, message = "Phone number must be of 10 digits")
 	private Long contact;
+	private String companyName;
+	private String gstNumber;
 	
 	
 	
@@ -65,6 +54,21 @@ public class User implements UserDetails {
 		this.userRole = userRole;
 		this.contact = contact;
 		this.confirmPassword = confirmPassword;
+	}
+	public User(String firstName, String lastName, String email, String password, UserRole userRole,
+				Long contact,
+				String confirmPassword,
+				String companyName,
+				String gstNumber) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.email = email;
+		this.password = password;
+		this.userRole = userRole;
+		this.contact = contact;
+		this.confirmPassword = confirmPassword;
+		this.companyName = companyName;
+		this.gstNumber = gstNumber;
 	}
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

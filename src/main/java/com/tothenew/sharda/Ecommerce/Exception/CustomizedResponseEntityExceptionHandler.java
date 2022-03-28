@@ -42,4 +42,9 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
     public ResponseEntity<Object> handleInvalidEmailException(InvalidEmailException e) {
         return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(value = {EmailAlreadyTakenException.class})
+    public ResponseEntity<Object> handleEmailAlreadyTakenException(EmailAlreadyTakenException e) {
+        return new ResponseEntity<>(e, HttpStatus.ALREADY_REPORTED);
+    }
 }

@@ -5,15 +5,9 @@ import com.tothenew.sharda.Ecommerce.Exception.EmailAlreadyConfirmedException;
 import com.tothenew.sharda.Ecommerce.Exception.InvalidEmailException;
 import com.tothenew.sharda.Ecommerce.Exception.TokenExpiredException;
 import com.tothenew.sharda.Ecommerce.Exception.TokenNotFoundException;
-import com.tothenew.sharda.Ecommerce.Registration.Token.ConfirmationToken;
-import com.tothenew.sharda.Ecommerce.Registration.Token.ConfirmationTokenRepository;
-import com.tothenew.sharda.Ecommerce.Registration.Token.ConfirmationTokenService;
-import com.tothenew.sharda.Ecommerce.User.User;
-import com.tothenew.sharda.Ecommerce.User.UserRepository;
-import com.tothenew.sharda.Ecommerce.User.UserRole;
-import com.tothenew.sharda.Ecommerce.User.UserService;
+import com.tothenew.sharda.Ecommerce.Registration.Token.*;
+import com.tothenew.sharda.Ecommerce.User.*;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,7 +24,7 @@ public class RegistrationService {
     private final EmailSender emailSender;
     private final UserRepository userRepository;
 
-    public String register(RegistrationRequest request) {
+    public String registerAsCustomer(RegistrationRequestCustomer request) {
         boolean isValidEmail = emailValidator.test(request.getEmail());
         if (!isValidEmail) {
             throw new InvalidEmailException("Email is not Valid!");
@@ -44,6 +38,29 @@ public class RegistrationService {
                         UserRole.CUSTOMER,
                         request.getContact(),
                         request.getConfirmPassword()
+                )
+        );
+        String link = "http://localhost:8080/api/v1/registration/confirm?token="+token;
+        emailSender.send(request.getEmail(), buildEmail(request.getFirstName(), link));
+        return token;
+    }
+
+    public String registerAsSeller(RegistrationRequestSeller request) {
+        boolean isValidEmail = emailValidator.test(request.getEmail());
+        if (!isValidEmail) {
+            throw new InvalidEmailException("Email is not Valid!");
+        }
+        String token = userService.signUpUser(
+                new User(
+                        request.getFirstName(),
+                        request.getLastName(),
+                        request.getEmail(),
+                        request.getPassword(),
+                        UserRole.SELLER,
+                        request.getCompanyContact(),
+                        request.getConfirmPassword(),
+                        request.getCompanyName(),
+                        request.getGstNumber()
                 )
         );
         String link = "http://localhost:8080/api/v1/registration/confirm?token="+token;
@@ -65,6 +82,7 @@ public class RegistrationService {
         userService.enableUser(confirmationToken.getUser().getEmail());
         return "confirmed";
     }
+
 
     public String confirmByEmail(String email) {
         Optional<User> user = userRepository.findByEmail(email);

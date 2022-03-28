@@ -11,9 +11,14 @@ public class RegistrationController {
 
     private RegistrationService registrationService;
 
-    @PostMapping
-    public String register(@Valid @RequestBody RegistrationRequest request) {
-        return registrationService.register(request);
+    @PostMapping(path = "/customer")
+    public String register(@Valid @RequestBody RegistrationRequestCustomer request) {
+        return registrationService.registerAsCustomer(request);
+    }
+
+    @PostMapping(path = "/seller")
+    public String register(@Valid @RequestBody RegistrationRequestSeller request) {
+        return registrationService.registerAsSeller(request);
     }
 
     @PutMapping(path = "confirm")

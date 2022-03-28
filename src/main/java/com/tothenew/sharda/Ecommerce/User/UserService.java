@@ -1,5 +1,6 @@
 package com.tothenew.sharda.Ecommerce.User;
 
+import com.tothenew.sharda.Ecommerce.Exception.EmailAlreadyTakenException;
 import com.tothenew.sharda.Ecommerce.Registration.Token.ConfirmationToken;
 import com.tothenew.sharda.Ecommerce.Registration.Token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
@@ -29,7 +30,7 @@ public class UserService implements UserDetailsService{
 	public String signUpUser(User user) {
 		boolean userExists = userRepository.findByEmail(user.getEmail()).isPresent();
 		if (userExists) {
-			throw new IllegalStateException("Email already taken!!");
+			throw new EmailAlreadyTakenException("Email already taken!!");
 		}
 		String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
 		String encodedConfirmPassword = bCryptPasswordEncoder.encode(user.getConfirmPassword());
