@@ -1,8 +1,12 @@
 package com.tothenew.sharda.Ecommerce.Registration;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import javax.validation.Valid;
+import java.net.URI;
 
 @RestController
 @RequestMapping(path = "api/v1/registration")
@@ -17,8 +21,10 @@ public class RegistrationController {
     }
 
     @PostMapping(path = "/seller")
-    public String register(@Valid @RequestBody RegistrationRequestSeller request) {
-        return registrationService.registerAsSeller(request);
+    public ResponseEntity<Object> register(@Valid @RequestBody RegistrationRequestSeller request) {
+        registrationService.registerAsSeller(request);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("api/v1/registration/seller").buildAndExpand(request.getEmail()).toUri();
+        return ResponseEntity.created(uri).build();
     }
 
     @PutMapping(path = "confirm")
@@ -26,7 +32,7 @@ public class RegistrationController {
         return registrationService.confirmToken(token);
     }
 
-    @PostMapping(path = "confirm")
+    @PostMapping(path = "/customer/confirm")
     public String confirmByEmail(@RequestParam("email") String email) {
         return registrationService.confirmByEmail(email);
     }

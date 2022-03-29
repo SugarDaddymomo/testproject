@@ -1,6 +1,7 @@
 package com.tothenew.sharda.Ecommerce.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import javax.persistence.*;
@@ -38,14 +39,15 @@ public class User implements UserDetails {
 	private Boolean enabled = false;
 	private Integer invalidAttemptCount;
 	private LocalDateTime passwordUpdateDate;
+	@Transient
 	private String confirmPassword;
-	private Long contact;
+	private String contact;
 	private String companyName;
 	private String gstNumber;
 	
 	
 	
-	public User(String firstName, String lastName, String email, String password, UserRole userRole, Long contact, String confirmPassword) {
+	public User(String firstName, String lastName, String email, String password, UserRole userRole, String contact, String confirmPassword) {
 		super();
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -56,7 +58,7 @@ public class User implements UserDetails {
 		this.confirmPassword = confirmPassword;
 	}
 	public User(String firstName, String lastName, String email, String password, UserRole userRole,
-				Long contact,
+				String contact,
 				String confirmPassword,
 				String companyName,
 				String gstNumber) {
@@ -78,15 +80,6 @@ public class User implements UserDetails {
 	@Override
 	public String getPassword() {
 		return password;
-	}
-	public String getLastName() {
-		return lastName;
-	}
-	public String getMiddleName() {
-		return middleName;
-	}
-	public String getFirstName() {
-		return firstName;
 	}
 	@Override
 	public String getUsername() {
